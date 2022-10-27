@@ -1,0 +1,65 @@
+plugins {
+    id("groovy") 
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("io.micronaut.application") version "3.6.2"
+}
+
+version = "0.1"
+group = "mn.incremental.groovy"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly("io.micronaut.data:micronaut-data-processor")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-jackson-databind")
+    implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator")
+    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    implementation("io.micronaut.groovy:micronaut-runtime-groovy")
+    implementation("io.micronaut.security:micronaut-security")
+    implementation("io.micronaut.sql:micronaut-hibernate-jpa")
+    implementation("io.micronaut.sql:micronaut-jdbc-tomcat")
+    implementation("io.swagger.core.v3:swagger-annotations")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+    compileOnly("io.micronaut:micronaut-http-validation")
+    compileOnly("io.micronaut.security:micronaut-security-annotations")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("com.h2database:h2")
+    implementation("io.micronaut:micronaut-validation")
+
+    // Add Java subproject as a dependency in order to test compilation avoidance
+    implementation project(':mn-incremental-java')
+
+}
+
+
+application {
+    mainClass.set("mn.incremental.groovy.Application")
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
+
+graalvmNative.toolchainDetection = false
+micronaut {
+    runtime("netty")
+    testRuntime("spock2")
+    processing {
+        incremental(true)
+        annotations("mn.incremental.groovy.*")
+    }
+}
+
+// Enable Groovy incremental compilation: requires enabling 'GROOVY_COMPILATION_AVOIDANCE' feature preview in `settings.gradle`
+tasks.withType(GroovyCompile).configureEach {
+    options.incremental = true
+    // Disable annotation processing in order to avoid the error: "Enabling incremental compilation and configuring Java annotation processors for Groovy compilation is not allowed. Disable incremental Groovy compilation or remove the Java annotation processor configuration."
+    // https://github.com/gradle/gradle/issues/9871
+    // https://discuss.gradle.org/t/incremental-groovy-compilation-with-annotation-processor-in-java/38515
+    options.compilerArgs.addAll(['-proc:none'])
+}
+
+

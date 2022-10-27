@@ -1,0 +1,8 @@
+
+rootProject.name="mn-incremental"
+
+include 'mn-incremental-groovy'
+include 'mn-incremental-java'
+
+enableFeaturePreview 'GROOVY_COMPILATION_AVOIDANCE'
+

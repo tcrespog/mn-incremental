@@ -1,0 +1,1 @@
+Testing incremental Groovy compilation with Micronaut.
